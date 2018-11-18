@@ -1,0 +1,1007 @@
+安装软件,JDK,Tomcat,MySQL,redis,zookeeper,solr,cas
+
+	jdk-java开发工具包
+	tomcat-服务器,处理请求,响应数据
+	mysql-数据库
+	redis-基于内存的非关系型数据库
+	zookeeper-远程调用
+	solr-搜索引擎
+	cas-单点登录
+
+软件开启命令
+			
+	zookeeper开启
+		进入zookeeper安装目录
+			[root@hostname ~]# cd /usr/local/zookeeper/zookeeper/bin
+		开启服务
+			[root@hostname bin]# ./zkServer.sh start 
+			JMX enabled by default
+			Using config: /usr/local/zookeeper/zookeeper/bin/../conf/zoo.cfg
+			Starting zookeeper ... already running as process 3683.
+		查看开启状态
+			[root@hostname bin]# ./zkServer.sh status
+			JMX enabled by default
+			Using config: /usr/local/zookeeper/zookeeper/bin/../conf/zoo.cfg
+			Mode: standalone
+		关闭服务
+			[root@hostname bin]# ./zkServer.sh stop
+			JMX enabled by default
+			Using config: /usr/local/zookeeper/zookeeper/bin/../conf/zoo.cfg
+			Stopping zookeeper ... STOPPED
+
+	redis的开启
+		进入redis安装目录
+			[root@hostname ~]# cd /usr/local/redis/6379/bin
+		开启服务端,配置文件后端开启
+			[root@hostname bin]# ./redis-server ./redis.conf
+		开启客户端
+			[root@hostname bin]# ./redis-cli
+		ping命令
+			127.0.0.1:6379> ping
+			PONG
+			127.0.0.1:6379>
+
+		
+	solr的开启,即开启tomcat
+		进入tomcat安装目录
+			[root@hostname ~]# cd /usr/local/solr/tomcat/bin
+		关闭命令
+			[root@hostname bin]# ./shutdown.sh
+			Using CATALINA_BASE:   /usr/local/solr/tomcat
+			Using CATALINA_HOME:   /usr/local/solr/tomcat
+			Using CATALINA_TMPDIR: /usr/local/solr/tomcat/temp
+			Using JRE_HOME:        /usr/local/java/jdk1.7.0_55
+			Using CLASSPATH:       /usr/local/solr/tomcat/bin/bootstrap.jar:/usr/local/solr/tomcat/bin/tomcat-juli.jar
+		开启命令
+			[root@hostname bin]# ./startup.sh
+			Using CATALINA_BASE:   /usr/local/solr/tomcat
+			Using CATALINA_HOME:   /usr/local/solr/tomcat
+			Using CATALINA_TMPDIR: /usr/local/solr/tomcat/temp
+			Using JRE_HOME:        /usr/local/java/jdk1.7.0_55
+			Using CLASSPATH:       /usr/local/solr/tomcat/bin/bootstrap.jar:/usr/local/solr/tomcat/bin/tomcat-juli.jar
+			[root@hostname bin]# 
+			
+	cas的开启,即开启tomcat
+		进入tomcat安装目录
+			[root@hostname ~]# cd /usr/local/cas/tomcat/bin
+		关闭命令
+			[root@hostname bin]# ./shutdown.sh
+			Using CATALINA_BASE:   /usr/local/cas/tomcat
+			Using CATALINA_HOME:   /usr/local/cas/tomcat
+			Using CATALINA_TMPDIR: /usr/local/cas/tomcat/temp
+			Using JRE_HOME:        /usr/local/java/jdk1.7.0_55
+			Using CLASSPATH:       /usr/local/cas/tomcat/bin/bootstrap.jar:/usr/local/cas/tomcat/bin/tomcat-juli.jar
+		开启命令
+			[root@hostname bin]# ./startup.sh
+			Using CATALINA_BASE:   /usr/local/cas/tomcat
+			Using CATALINA_HOME:   /usr/local/cas/tomcat
+			Using CATALINA_TMPDIR: /usr/local/cas/tomcat/temp
+			Using JRE_HOME:        /usr/local/java/jdk1.7.0_55
+			Using CLASSPATH:       /usr/local/cas/tomcat/bin/bootstrap.jar:/usr/local/cas/tomcat/bin/tomcat-juli.jar
+	
+
+一、JDK的安装
+Java依赖下载
+	yum install glibc.i686
+	
+1.查看系统自带的JDK
+	执行指令：rpm -qa | grep -i jdk --color
+	得到结果：
+		java-1.6.0-openjdk-1.6.0.0-1.66.1.13.0.el6.i686
+		java-1.7.0-openjdk-1.7.0.45-2.4.3.3.el6.i686
+
+2.卸载系统自带的jdk
+	执行指令：
+		rpm -e --nodeps java-1.6.0-openjdk-1.6.0.0-1.66.1.13.0.el6.i686
+		rpm -e --nodeps java-1.7.0-openjdk-1.7.0.45-2.4.3.3.el6.i686
+
+3.上传文件
+	按下alt+p打开文件上传窗口，将需要安装的JDK压缩包(jdk-7u71-linux-i586.tar.gz)拖拽到文件上传窗口！
+	
+4.解压文件
+	执行指令：tar -zxvf jdk-7u71-linux-i586.tar.gz
+	得到结果：jdk1.7.0_71
+
+5.创建目录
+	执行指令：mkdir /usr/local/src/java
+
+6.移动文件
+	执行指令：mv jdk1.7.0_71 /usr/local/src/java
+
+7.配置环境变量
+	执行指令：vim /etc/profile
+	输入i进入插入模式，将光标移动文件的末尾，将以下2行带粘贴上去，按下Esc退出插入模式到一般模式，输入:wq保存退出！
+		export JAVA_HOME=/usr/local/src/java/jdk1.7.0_71
+		export PATH=$JAVA_HOME/bin:$PATH
+
+8.让环境变量生效
+	可以重启Linux系统
+	执行命令：source /etc/profile
+
+9.测试
+	在任意目录执行指令：java -version
+	出现以下内容，说明JDK安装配置OK！
+		java version "1.7.0_71"
+		Java(TM) SE Runtime Environment (build 1.7.0_71-b14)
+		Java HotSpot(TM) Client VM (build 24.71-b01, mixed mode)
+
+二、Tomcat的安装
+1.上传文件
+	按下alt+p打开文件上传窗口，将需要安装的Tomcat压缩包(apache-tomcat-7.0.57.tar.gz)拖拽到文件上传窗口！
+
+2.解压文件
+	执行指令：tar -zxvf apache-tomcat-7.0.57.tar.gz
+	得到结果：apache-tomcat-7.0.57
+
+3.移动文件
+	执行指令：mv apache-tomcat-7.0.57 /usr/local/src/java
+
+4.配置防火墙
+	执行指令：vim /etc/sysconfig/iptables
+	输入i进入插入模式，将光标移到端口为22所在行的末尾，回车，复制22端口所在行的内容，粘贴在下一行，并将下一行的22改为8080
+	按下Esc退出插入模式到一般模式，输入:wq保存退出！
+
+5.重启防火墙
+	执行指令：service iptables restart
+
+6.启动Tomcat
+	进入目录：cd /usr/local/src/java/apache-tomcat-7.0.57
+	执行指令：./bin/startup.sh
+
+7.测试
+	在浏览器地址栏输入： http://192.168.59.153:8080 
+	如果进入Tomcat主页，说明Tomcat安装配置OK！
+
+8.停止Tomcat
+	进入目录：cd /usr/local/src/java
+	执行指令：./apache-tomcat-7.0.57/bin/shutdown.sh
+
+三、MySQL的安装
+MySQL依赖下载
+	yum -y install libaio.so.1 libgcc_s.so.1 libstdc++.so.6
+
+1.查看系统自带的MySQL
+	执行指令：rpm -qa | grep -i mysql --color
+	得到结果：mysql-libs-5.1.71-1.el6.i686
+
+2.卸载自带的MySQL
+	执行指令：rpm -e --nodeps mysql-libs-5.1.71-1.el6.i686
+
+3.上传文件
+	按下alt+p打开文件上传窗口，将需要安装MySQL的2个rpm文件拖拽到文件上传窗口！
+		MySQL-server-5.5.49-1.linux2.6.i386.rpm
+		MySQL-client-5.5.49-1.linux2.6.i386.rpm
+
+4.安装server
+	执行指令：rpm -ivh MySQL-server-5.5.49-1.linux2.6.i386.rpm
+
+	注意提示信息：PLEASE REMEMBER TO SET A PASSWORD FOR THE MySQL root USER !
+		首次进入MySQL不需要输入用户名和密码，但是进入之后一定要记得为root用户设置一个密码！！！！
+
+5.安装client
+	执行指令：rpm -ivh MySQL-client-5.5.49-1.linux2.6.i386.rpm
+
+6.启动MySQL服务
+	执行指令：service mysql start
+	
+7.进入MySQL
+	直接输入： mysql
+	为root账户设置密码，执行指令：set password = password('root');
+
+8.配置防火墙
+	执行指令：vim /etc/sysconfig/iptables
+	输入i进入插入模式，将光标移到端口为8080所在行的末尾，回车，
+	复制8080端口所在行的内容，粘贴在下一行，并将下一行的8080改为3306
+	按下Esc退出插入模式到一般模式，输入:wq保存退出！
+
+9.重启防火墙
+	执行指令：service iptables restart
+
+10.创建账户并授权
+	先得进入MySQL
+	执行以下三行MySQL的命令：
+		create user 'root'@'%' identified by 'root';		#创建用户，并设置密码
+		grant all on *.* to 'root'@'%' with grant option;	#给指定的用户授权
+		flush privileges;									#刷新权限
+
+11.在windows中访问Linux里面的MySQL
+	按下win+r,输入cmd打开DOS窗口
+	执行指令:
+		mysql -h 192.168.59.153 -u root -p
+		root
+
+12.使用Navicat工具
+	点击连接，选择MySQL，输入连接名称，修改主机(ip地址)，输入密码，点击确定！
+	
+
+四、redis的安装
+Redis的依赖下载
+	yum install gcc-c++
+	
+1.上传文件
+	按下alt+p打开文件上传窗口，将需要安装的redis压缩包(redis-3.0.0.tar.gz)拖拽到文件上传窗口！
+	进入根目录下查看
+		进入 cd /root/
+		查看 ll -h
+
+2.创建目录(或者进入指定目录在指定目录中创建新目录)
+	执行指令：mkdir /usr/local/redis
+	
+3.进入创建好的目录中,查看目录结构,为空
+	执行命令：cd /usr/local/redis
+	执行命令：ll -h
+	
+4.移动文件/目录,或复制文件/目录
+	把当前目录下的文件移动或复制到指定目录
+		移动执行指令：mv redis-3.0.0.tar.gz /usr/local/redis
+		复制执行指令：cp redis-3.0.0.tar.gz /usr/local/redis 
+	或者把指定目录下的文件移动或复制到当前目录	
+		移动执行指令：mv  /root/redis/redis-3.0.0.tar.gz ./		
+		复制执行指令：cp  /root/redis/redis-3.0.0.tar.gz ./
+	
+5.解压,查看并强制解压文件到当前目录下
+	执行命令：ll -h
+		文件为只读权限,强制解压
+	执行指令：tar -zxvf redis-3.0.0.tar.gz -C ./
+	得到结果：redis-3.0.0
+	
+6.进入解压后的目录查看
+	执行命令：cd redis-3.0.0
+	执行命令：ll
+	
+7.编译,源码安装,C语言,需要先编译
+	编译之前，必须下载gcc依赖,编译器！
+	一定要进入指定目录：redis-3.0.0	
+	执行指令：yum install gcc-c++  【请确保处于联网状态】
+
+8.安装,安装命令make,并指定安装目录PREFIX,为redis集群安装的细分,指定默认端口号为安装后的目录
+	一定要进入指定目录：redis-3.0.0
+	执行安装指令：make PREFIX="/usr/local/redis/6379" install
+
+9.查看安装后的目录
+	执行命令：cd /usr/local/redis/6379
+	查看: ll -h
+	进入bin目录 cd bin
+	
+10.进入bin目录,查看目录下的启动文件
+	服务端: redis-server
+	客户端: redis-cli
+	
+11.前端启动,bin目录下
+	执行命令：./redis-server
+	看到奶酪,执行成功
+	服务器不能依赖窗口的关闭而关闭
+	ctrl+c 退出
+	
+12.后端启动,利用配置文件启动,在源码中查看配置文件
+	在解压后的 redis-3.0.0 目录下查看 redis.conf
+	执行命令：cd /usr/local/redis/redis-3.0.0
+	执行命令：ll -h
+
+13.copy文件,复制配置文件
+	执行指令：cp redis.conf /usr/local/redis/6379/bin/
+
+14.修改配置文件
+	执行指令：cd /usr/local/redis/6379/bin/   【进入了bin目录】
+	执行编辑指令：vim redis.conf
+		输入i进入插入模式，将光标移到第38行，复制37行的内容粘贴到38行，改no为yes，
+		按下Esc退出插入模式到一般模式，输入:wq保存退出
+
+15.启动Redis,在bin目录下
+	执行指令：./redis-server ./redis.conf
+	
+16.管道命令查看执行状态
+	执行命令：ps -ef | grep redis
+
+17.连接Redis
+	执行指令：./redis-cli 
+	-h 192.168.200.128 -p 6379
+
+18.测试：
+	输入ping 得到PONG 说明Redis安装配置OK！
+
+	
+五、zookeeper的安装
+
+1.查看根目录目录结构(~ 同 /root/)
+	执行命令: ll -h
+	得到结果: zookeeper
+	
+2.进入软件需要安装到的目录
+	执行命令: cd /usr/local/
+	
+3.查看目录结构
+	执行命令: ll -h
+	
+4.当前目录下创建文件夹
+	执行命令: mkdir zookeeper
+	
+5.进入创建好的目录中
+	执行命令: cd zookeeper/
+	
+6.查看目录结构
+	执行命令: ll
+	得到结果: total 0
+	
+7.复制文件到当前目录(./ 表示当前目录)
+	执行命令: cp /root/zookeeper/zookeeper-3.4.6.tar.gz ./
+	
+8.复制完成后查看当前目录(可以看到解压后的文件为r,只读权限)
+	执行命令: ll
+	得到结果：
+		total 17288
+		-rw-r--r--. 1 root root 17699306 Sep 12 23:43 zookeeper-3.4.6.tar.gz
+
+9.解压文件到当前目录(只读权限,强制解压,参数 -C)
+	执行命令: tar -zxvf zookeeper-3.4.6.tar.gz -C ./
+	
+10.解压后查看当前目录结构
+	执行命令: ll
+	
+11.移动并重命名
+	执行命令: mv zookeeper-3.4.6 zookeeper
+	
+12.进入重命名后的目录
+	执行命令: cd zookeeper
+	
+13.看到目录结构,conf为配置文件目录,进入配置文件目录,并查看
+	执行命令: cd conf
+	执行命令: ll
+	得到结果：zoo_sample.cfg 
+		(模板文件)
+		
+14.复制模板文件,并重命名
+	执行命令: cp zoo_sample.cfg zoo.cfg
+	
+15.再次查看目录结构
+	执行指令：ll
+	
+16.查看,用修改命令查看复制后的配置文件内容
+	执行命令: vim zoo.cfg
+	得到结果：clientPort=2181
+		(客户端端口号)
+		
+17.不保存退出
+	执行命令：: q!
+	
+18.退出一级,查看,进入bin目录
+	执行命令: cd ..
+	执行命令：ll
+	执行命令：cd bin
+	得到结果：zkServer.sh
+	
+19.在bin目录中开启服务
+	执行命令: ./zkServer.sh start
+
+20.查看执行状态
+	执行命令: ./zkServer.sh status
+	得到结果: Mode: standalone
+		(开启成功)
+		
+21.关闭服务(开启失败时可以先关闭再开启)
+	执行命令: ./zkServer.sh stop
+
+22.再次查看执行状态
+	执行命令: ./zkServer.sh status
+	
+
+	
+六、solr的安装
+
+solr需要运行在一个Servlet容器中,Solr4.10.3要求jdk使用1.7以上,Solr默认提供Jetty（java写的Servlet容器）
+	windows下
+		使用jetty启动：
+		使用cmd命令行,X:命令进入盘符X下,cd命令进入example文件夹
+		启动命令java -jar start.jar
+		启动后访问地址：http://127.0.0.1:8983/solr
+		
+	Linux下
+		企业中一般使用Tomcat作为服务器,在Linux系统下部署solr到Tomcat
+	
+(一)solr部署到tomcat
+1.solr的安装文件,已放入Linux下的根目录下,查看文件
+	进入到根目录下的solr目录下,查看目录结构
+	执行命名: cd /root/solr/
+	执行命令：ll -h
+	得到结果：
+		IKAnalyzer2012FF_hf1.zip (中文分词器)
+		solr-4.10.3.tar (solr安装文件)
+		
+2.创建目录,在根目录下的usr下local下创建solr目录
+	执行命令：cd /usr/local/
+	执行命令：mkdir solr
+	查看目录为空
+	
+3.复制文件到当前目录,服务器文件,分词器文件,solr文件
+	执行命令：cp /root/solr/IKAnalyzer2012FF_hf1.zip ./
+	执行命令：cp /root/solr/solr-4.10.3.tar ./
+	执行命令：cp /root/tomcat/apache-tomcat-7.0.47.tar.gz ./
+	
+4.tar后缀的文件解压,到当前目录,强制解压
+	执行命令：tar -zxvf apache-tomcat-7.0.47.tar.gz -C ./
+	执行命令: tar -zxvf solr-4.10.3.tar -C ./
+	
+5.查看解压后的目录目录结构
+	执行命令：ll -h 
+	得到结果：
+		apache-tomcat-7.0.47
+		apache-tomcat-7.0.47.tar.gz
+		IKAnalyzer2012FF_hf1.zip
+		solr-4.10.3
+		solr-4.10.3.tar
+		
+6.修改目录名称,方便启动solr
+	执行命令：mv apache-tomcat-7.0.47 tomcat
+	
+7.zip后缀的文件解压
+	Linux下需要安装解压软件才能执行解压命令
+	tar后缀文件的解压执行tar命令依靠相应的解压软件
+	zip后缀文件的解压执行unzip命令依靠相应的解压软件,下载解压软件 yum install unzip
+	unzip解压后不会创建目录,文件散乱,需要先创建文件再进行解压
+		执行命令：mkdir IK
+	将文件移动到IK目录,在IK目录下,进行解压,强制解压zip,参数 -d
+		执行命令：mv IKAnalyzer2012FF_hf1.zip IK/
+		执行命令：cd IK/
+		执行命令: unzip IKAnalyzer2012FF_hf1.zip -d ./
+		
+8.部署,复制solr的war包到tomcat的webapps目录下
+	执行命令: cp solr-4.10.3/example/webapps/solr.war tomcat/webapps/
+	
+9.运行tomcat, 这个运行的目的是解压war包, 不是运行项目. 运行后停止tomcat
+	运行sh脚本文件sh命令,运行shell脚本文件,后缀名为.sh的文件
+	运行报错,solr配置文件未进行配置
+		执行命令：sh tomcat/bin/startup.sh
+	war解压完成,关闭tomcat
+		执行命令：sh tomcat/bin/shutdown.sh
+		
+10.进入tomcat下的webapps查看solr.war是否解压成功
+	执行命令：cd tomcat/webapps
+	执行命令：ll -h 
+	得到结果：solr
+	
+11.删除solr.war,否则每次运行都会解压,覆盖原来的目录
+	且必须在tomcat关闭状态下删除,否则运行中会将关联文件删除,就会将已解压好的文件删除
+		执行命令: rm -rf solr.war
+		查看文件是否删除: ll -h 
+	
+12.补全jar包,复制solr目录中的jar到tomcat中
+	退出到solr目录下,两次cd ..命令
+	执行命令：cp solr-4.10.3/example/lib/ext/* tomcat/webapps/solr/WEB-INF/lib
+
+13.复制example下的solr目录,即solrhome到当前solr目录
+	递归复制,复制目录下的所有目录下的文件,参数-r 
+	执行命令: cp -r solr-4.10.3/example/solr ./
+	
+14.将复制后的solr目录改名为solrhome
+	查看复制后的目录 ll -h 
+	执行命令：mv solr solrhome
+	再次查看改名后的目录 ll -h 
+	
+15.复制solrhome的绝对路径到项目的web.xml中
+	路径: /usr/local/solr/solrhome
+	打开项目的web.xml 
+		执行命令：cd tomcat/webapps/solr/WEB-INF
+		执行命令: ll -h 
+			得到结果：web.xml 
+		执行命令：vim web.xml 
+		命令i,进入编辑模式,将如下的标签注释放开,粘贴复制的solrhome的绝对路径,命令esc退到一般模式,命令:底行模式,命令wq保存退出
+			<env-entry>
+			   <env-entry-name>solr/home</env-entry-name>
+			   <env-entry-value>/usr/local/solr/solrhome</env-entry-value>
+			   <env-entry-type>java.lang.String</env-entry-type>
+			</env-entry>
+
+16.启动tomcat
+	执行命令：cd .. 三次,退到tomcat目录下
+	执行命令：sh bin/startup.sh
+	
+17.访问服务器下的solr项目
+	http://192.168.200.128:8080/solr/ 
+	看到solr页面,部署成功!
+	
+(二)solr添加实例
+18.添加索引库实例,需要先关闭tomcat
+	执行命令: cd /usr/local/solr/
+	执行命令：sh tomcat/bin/shutdown.sh
+		进入solrhome目录
+	执行命令: cd solrhome
+	执行命令：cp -r collection1 collection2
+	
+19.修改复制后实例的配置文件
+	执行命令：cd collection2
+	查看目录下配置文件: ll -h 
+		core.properties
+	修改配置文件
+		执行命令：vim core.properties
+		命令i编辑模式,修改,esc退到一般模式,:wq保存退出！
+		name=collection2
+		
+20.重新启动tomcat,访问solr项目页面,查看实例变化
+	执行命令: cd .. 退到solr目录下
+	执行命令：sh tomcat/bin/startup.sh 
+	访问solr项目页面,出现
+		collection1
+		collection2
+		添加实例成功
+	
+	
+(三)集成中文分词器
+21.关闭tomcat
+	执行命令：sh tomcat/bin/shutdown.sh
+	
+22.复制IKAnalyzer下的jar包和配置文件到tomcat
+	执行命令：cp IKAnalyzer2012FF_u1.jar /usr/local/solr/tomcat/webapps/solr/WEB-INF/lib
+	
+	项目编译后的文件在WEB-INF下的classes文件夹下,进入目录查看,没有,需要创建文件夹,将配置文件复制进来
+	
+	进入WEB-INF目录
+		执行命令：cd /usr/local/solr/tomcat/webapps/solr/WEB-INF/
+	查看文件夹内容
+		执行命令：ll -h
+	创建文件夹
+		执行命令：mkdir classes
+	进入创建的文件夹
+		执行命令：cd classes
+	查看目录内容
+		执行命令：ll -h 
+	复制配置文件
+		执行命令：cp /usr/local/solr/IK/IKAnalyzer.cfg.xml ./
+	复制词典文件
+		执行命令：cp /usr/local/solr/IK/stopword.dic ./
+	
+	扩展词典需要自己创建
+		执行命令：touch ext.dic
+		
+23.修改分词器核心配置文件
+	执行命令：vim IKAnalyzer.cfg.xml
+	命令i,进入编辑模式,将如下的标签注释放开,命令esc退到一般模式,命令:底行模式,命令wq保存退出
+	<!--用户可以在这里配置自己的扩展字典 -->
+    <entry key="ext_dict">ext.dic;</entry>
+			
+
+(四)solr自定义域,配置中文分词器
+	修改schema.xml
+24.Editplus远程操作配置文件,自定义域
+	Editplus注册,汉化
+	文件--FTP--打开远程连接文件,FTP协议,操作文本文件
+		设置:
+			名称--xxx
+			FTP服务器--192.168.200.128
+			用户名--root
+			密码--123456
+			子目录--/
+		高级:
+			使用SFTP
+			
+25.打开实例的配置文件schema.xml
+	/usr/local/solr/solrhome/collection1/conf/schema.xml
+	
+26.在schema.xml中添加一个自定义的fieldType，使用中文分析器,在文件最后添加如下内容
+	<!-- IKAnalyzer-->
+    <fieldType name="text_ik" class="solr.TextField">
+      <analyzer class="org.wltea.analyzer.lucene.IKAnalyzer"/>
+    </fieldType>
+	
+27.在Schema.xml中配置业务域
+	搜索时,数据库要显示的数据,需要在索引库创建与数据库对应的列
+	讲义day10的3.3.3标签配置
+	
+28.开启tomcat,访问solr项目页面,观察中文分词域是否添加成功
+	Analysis
+		Field Value(Index) 输入,我是中国人
+		Analyse Field/FieldType  选择,product_name 分词
+		Analyse Vaule 查看分词效果
+		
+(五)导入插件集成
+	数据库原始数据一次性导入solr索引进行初始化
+	修改solrconfig.xml
+29.打开实例的配置文件solrconfig.xml
+	/usr/local/solr/solrhome/collection1/conf/solrconfig.xml
+	
+30.添加讲义day10的3.4标签配置
+	<requestHandler name="/dataimport" class="org.apache.solr.handler.dataimport.DataImportHandler">
+		<lst name="defaults">
+		  <str name="config">data-config.xml</str>
+		 </lst>
+	</requestHandler>
+	
+31.创建data-config.xml文件
+	进入solrhome目录下的实例下的配置文件夹下
+		执行命令：cd /usr/local/solr/solrhome/collection1/conf/
+	创建data-config.xml文件
+		执行命令：touch data-config.xml
+		
+32.在Editplus下编辑data-config.xml文件
+	添加讲义day10的3.4标签配置
+	JDBD连接数据库,执行SQL语句,导入索引库,匹配索引域和表列名
+	更改主机ip和数据库名database,远程连接数据库(远程连接数据库,后附详解)
+	ip:192.168.200.56
+	
+33.执行jdbc操作,需要使用jar包
+	jar包需要存放在当前实例的lib下
+	进入实例collection1目录下,创建lib
+	进入实例目录
+		执行命令：cd ..
+	创建目录
+		执行命令：mkdir lib
+	进入lib
+		执行命令：cd lib
+	查看目录内容
+		执行命令：ll -h 
+	复制solr-4.10.3下的dist中jar包到当前目录
+	
+	进入dist目录
+		执行命令：cd /usr/local/solr/solr-4.10.3/dist
+	查看目录下jar
+		执行命令：ll -h
+	进入lib目录下
+		执行命令：cd /usr/local/solr/solrhome/collection1/lib
+	执行复制命令
+		执行命令：cp /usr/local/solr/solr-4.10.3/dist/solr-dataimporthandler-4.10.3.jar ./
+	执行复制命令
+		执行命令：cp /usr/local/solr/solr-4.10.3/dist/solr-dataimporthandler-extras-4.10.3.jar ./
+		
+34.数据库驱动包,使用FileZilla,从本地上传到虚拟机
+	站点管理--新建站点
+		主机--192.168.200.128
+		协议--SFTP
+		登陆类型--正常
+		用户--root
+		密码--123456
+		
+	左侧本机目录,右侧虚拟机目录,文件可互传
+	将本机文件的mysql-connector-java-5.1.7-bin.jar,拖入虚拟机linux下的根目录
+	
+35.将拖入的jar包复制到索引实例下的lib目录下
+	执行命令：cp /root/mysql-connector-java-5.1.7-bin.jar ./
+	
+36.查看索引实例下的三个jar
+	执行命令：ll -h
+	结果:
+		mysql-connector-java-5.1.7-bin.jar
+		solr-dataimporthandler-4.10.3.jar
+		solr-dataimporthandler-extras-4.10.3.jar
+	
+37.查看tomcat启动日志,实时监测
+	进入tomcat下的logs文件
+		执行命令：cd /usr/local/solr/tomcat/logs
+	实时监测
+		执行命令：tail -f catalina.out
+		
+	在CRT中重新打开一个窗口
+		Connect--不勾选Open in a tab--Connect
+	在新窗口重启动或关闭tomcat
+	进入tomcat下的bin目录
+		执行命令：cd /usr/local/solr/tomcat/bin
+	关闭tomcat
+		执行命令：./shutdown.sh
+	开启tomcat
+		执行命令：/startup.sh
+		
+38.访问solr项目页面,DataImport导入数据库数据
+	访问
+		http://192.168.200.128:8080/solr/
+	导入
+		Dataimport
+			full-impor 全部导入
+			Clean 清理
+			Commit 提交
+			Auto-Refresh Status 自动刷新状态
+			
+六.mysql数据库的远程连接
+	Mysql为了安全性，在默认情况下用户只允许在本地登录，可是在有此情况下，还是需要使用用户进行远程连接，
+	因此为了使其可以远程需要进行操作,允许root用户在任何地方进行远程登录，并具有所有库任何操作权限
+	
+	mysql -u root -p
+
+    查看user表
+
+	mysql> use mysql;
+	Database changed
+	mysql> select host,user,password from user;
+	+--------------+------+-------------------------------------------+
+	| host         | user | password                                  |
+	+--------------+------+-------------------------------------------+
+	| localhost    | root | *A731AEBFB621E354CD41BAF207D884A609E81F5E |
+	| 192.168.1.1  | root | *A731AEBFB621E354CD41BAF207D884A609E81F5E |
+	+--------------+------+-------------------------------------------+
+	2 rows in set (0.00 sec)
+	
+	mysql> update user set host='%' where user='root';
+
+   将权限改为ALL PRIVILEGES
+
+	mysql> use mysql;
+	Database changed
+	mysql> grant all privileges  on *.* to root@'%' identified by 'root';
+	Query OK, 0 rows affected (0.00 sec)
+
+	mysql> flush privileges;
+	Query OK, 0 rows affected (0.00 sec)
+
+	mysql> select host,user,password from user;
+	+--------------+------+-------------------------------------------+
+	| host         | user | password                                  |
+	+--------------+------+-------------------------------------------+
+	| localhost    | root | *A731AEBFB621E354CD41BAF207D884A609E81F5E |
+	| 192.168.1.1  | root | *A731AEBFB621E354CD41BAF207D884A609E81F5E |
+	| %            | root | *A731AEBFB621E354CD41BAF207D884A609E81F5E |
+	+--------------+------+-------------------------------------------+
+	3 rows in set (0.00 sec)
+
+	测试：mysql图形工具,新建连接,输入本机连接虚拟机的虚拟网卡上的ip,测试连接
+	
+	
+七.	cas的安装
+cas为war包项目,将项目部署到tomcat下
+cas需要连接数据库,要导入数据库的驱动包和连接包
+1.用户目录下查看目录和文件
+	执行命令：ll -h
+		cas 目录
+	执行命令：cd cas
+		cas.war
+		jar
+		page
+		
+2.创建目录,进入~下的usr/local/
+	执行命令：cd /usr/local/
+	执行命令：mkdir cas
+	
+3.复制文件到新建的cas目录下
+	进入cas下
+		执行命令：cd cas/
+	复制文件到当前目录
+		执行命令：cp /root/cas/cas.war ./
+		执行命令：cp /root/tomcat/apache-tomcat-7.0.47.tar.gz ./
+
+4.解压tomcat的压缩文件到当前目录
+	执行命令：tar -zxvf apache-tomcat-7.0.47.tar.gz -C ./
+	
+5.更改解压后的tomcat文件名称
+	执行命令：mv apache-tomcat-7.0.47 tomcat
+	
+6.由于tomcat的端口号已经和solr的tomcat的端口冲突,需要修改端口号
+	执行命令：vim tomcat/conf/server.xml 
+	i编辑 
+	修改端口号 22行-改为8015,70行-改为9001,91行-改为8019
+	esc退到一般模式 
+	:wq保存退出！
+	
+7.将cas.war文件移动到tomcat的webapps目录下,开启tomcat,自动解压war
+	执行命令：mv cas.war tomcat/webapps
+	
+8.进入到tomcat的webapps目录下查看
+	执行命令：cd tomcat/webapps/
+	执行命令：ll -h
+		cas.war
+		
+9.启动tomcat,解压war文件
+	执行命令：cd ..
+	执行命令：sh bin/startup.sh
+	
+10.浏览器访问192.168.200.128:9001/cas
+	看到cas登陆页面,启动成功
+		账户casuser 
+		密码mellon
+	
+11.关闭tomcat,不关闭tomcat删除war文件时会将解压后的文件一起删除
+	执行命令：sh bin/shutdown.sh
+	
+12.进入tomcat的webapps目录下,删除war文件
+	执行命令：cd webapps
+	查看 ll -h
+	执行命令：rm -rf cas.war
+	查看 ll -h
+	
+使用editorPlus编辑器远程连接虚拟机,修改配置文件,前方高能......
+
+13.修改服务地址
+	修改部署到tomcat下的cas的WEB-INF/cas.properties文件
+	大概20行
+	server.name=http://192.168.200.128:9001
+	
+14.去除https认证
+	CAS默认使用的是HTTPS协议，如果使用HTTPS协议需要SSL安全证书（需向特定的机构申请和购买）
+	（1）修改cas的WEB-INF/deployerConfigContext.xml
+	找到下面的配置
+	大概92行
+	<bean class="org.jasig.cas.authentication.handler.support.HttpBasedServiceCredentialsAuthenticationHandler"
+	p:httpClient-ref="httpClient" p:requireSecure="false"/>
+	这里需要增加参数p:requireSecure="false"，requireSecure属性意思为是否需要安全验证，即HTTPS，false为不采用
+	
+	（2）修改cas的/WEB-INF/spring-configuration/ticketGrantingTicketCookieGenerator.xml
+	找到下面配置
+	大概30行
+	<bean id="ticketGrantingTicketCookieGenerator" class="org.jasig.cas.web.support.CookieRetrievingCookieGenerator"
+		  p:cookieSecure="false"
+		  p:cookieMaxAge="3600"
+		  p:cookieName="CASTGC"
+		  p:cookiePath="/cas" />
+	参数p:cookieSecure="true"，同理为HTTPS验证相关，TRUE为采用HTTPS验证，FALSE为不采用https验证。
+	参数p:cookieMaxAge="-1"，是COOKIE的最大生命周期，-1为无生命周期，即只在当前打开的窗口有效，关闭或重新打开其它窗口，仍会要求验证。可以根据需要修改为大于0的数字，比如3600等，意思是在3600秒内，打开任意窗口，都不需要验证。
+	我们这里将cookieSecure改为false ,  cookieMaxAge 改为3600
+	
+	（3）修改cas的WEB-INF/spring-configuration/warnCookieGenerator.xml
+	找到下面配置
+	大概32行
+	<bean id="warnCookieGenerator" class="org.jasig.cas.web.support.CookieRetrievingCookieGenerator"
+	p:cookieSecure="false"
+	p:cookieMaxAge="3600"
+	p:cookieName="CASPRIVACY"
+	p:cookiePath="/cas" />
+	我们这里将cookieSecure改为false ,  cookieMaxAge 改为3600
+	
+配置数据源,连接数据库
+
+15.配置数据源
+（1）修改cas服务端中web-inf下deployerConfigContext.xml ，添加如下配置
+
+	<bean id="dataSource" class="com.mchange.v2.c3p0.ComboPooledDataSource"  
+		  p:driverClass="com.mysql.jdbc.Driver"  
+		  p:jdbcUrl="jdbc:mysql://192.168.200.56:3306/pyg?characterEncoding=utf8"  
+		  p:user="root"  
+		  p:password="root" /> 
+	<bean id="passwordEncoder" 
+	class="org.jasig.cas.authentication.handler.DefaultPasswordEncoder"  
+	c:encodingAlgorithm="MD5"  
+	p:characterEncoding="UTF-8" />  
+	<bean id="dbAuthHandler"  
+	  class="org.jasig.cas.adaptors.jdbc.QueryDatabaseAuthenticationHandler"  
+	  p:dataSource-ref="dataSource"  
+	  p:sql="select password from tb_user where username = ?"  
+	  />  
+	  
+	  不使用加密验证
+	<!-- p:passwordEncoder-ref="passwordEncoder" -->
+
+
+然后在配置文件开始部分找到如下配置
+ <bean id="authenticationManager" class="org.jasig.cas.authentication.PolicyBasedAuthenticationManager">
+		<constructor-arg>
+			<map>               
+				<entry key-ref="proxyAuthenticationHandler" value-ref="proxyPrincipalResolver" />
+			 <!--  <entry key-ref="primaryAuthenticationHandler" value-ref="primaryPrincipalResolver" /> ?
+				<entry key-ref="dbAuthHandler" value-ref="primaryPrincipalResolver"/>
+			</map>
+		</constructor-arg>      
+		<property name="authenticationPolicy">
+			<bean class="org.jasig.cas.authentication.AnyAuthenticationPolicy" />
+		</property>
+</bean>
+其中
+ <entry key-ref="primaryAuthenticationHandler" value-ref="primaryPrincipalResolver" />
+一句是使用固定的用户名和密码，我们在下面可以看到这两个bean ,如果我们使用数据库认证用户名和密码，需要将这句注释掉。
+添加下面这一句配置,  注意中文空格, 如果有中文空格可能在配置文件中不好用
+<entry key-ref="dbAuthHandler" value-ref="primaryPrincipalResolver"/>
+
+（2）将以下三个jar包放入webapps\cas\WEB-INF\lib下 
+		C3p0-0.9.1.2.jar 
+		cas-server-support-jdbc-4.0.0.jar 
+		mysql-connector-java-5.1.32.jar 
+	在root用户目录下查看cas目录下的jar中的文件,包含以上三个jar
+	进入tomcat下的lib目录 
+		执行命令：cd /usr/local/cas/tomcat/lib/
+	复制jar
+		执行命令：
+			cp /root/cas/jar 按两次tab键,查看复制当前目录下的文件
+			cp /root/cas/jar/c3p0-0.9.1.2.jar ./
+			cp /root/cas/jar/mysql-connector-java-5.1.32.jar ./
+			cp /root/cas/jar/cas-server-support-jdbc-4.0.0.jar ./
+			
+			
+16.CAS默认页面的改造
+	16.1拷贝资源
+	（1）将需要更改的登陆页login.html拷贝到cas系统下WEB-INF\view\jsp\default\ui 目录下
+	（2）将css  js等文件夹拷贝到  cas目录下
+	（3）将原来的casLoginView.jsp 改名（可以为之后的修改操作做参照），将login.html改名为casLoginView.jsp 
+	
+	16.2修改页面
+	编辑casLoginView.jsp 内容
+	（1）添加指令
+	<%@ page pageEncoding="UTF-8" %>
+	<%@ page contentType="text/html; charset=UTF-8" %>
+	<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+	<%@ taglib prefix="spring" uri="http://www.springframework.org/tags" %>
+	<%@ taglib prefix="form" uri="http://www.springframework.org/tags/form" %>
+	<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
+	（2）修改form标签
+	<form:form method="post" id="fm1" commandName="${commandName}" htmlEscape="true" class="sui-form">
+	......
+	</form:form>
+	（3）修改用户名框
+	<form:input id="username" tabindex="1" 
+		accesskey="${userNameAccessKey}" path="username" autocomplete="off" htmlEscape="true" 
+		placeholder="邮箱/用户名/手机号" class="span2 input-xfat" />
+	（4）修改密码框
+	 <form:password  id="password" tabindex="2" path="password" 
+		  accesskey="${passwordAccessKey}" htmlEscape="true" autocomplete="off" 
+		  placeholder="请输入密码" class="span2 input-xfat"   />
+	（5）修改登陆按钮
+	<input type="hidden" name="lt" value="${loginTicket}" />
+	<input type="hidden" name="execution" value="${flowExecutionKey}" />
+	<input type="hidden" name="_eventId" value="submit" />
+	<input class="sui-btn btn-block btn-xlarge btn-danger" accesskey="l" value="登陆" type="submit" />
+
+16.3 错误提示的改造
+在表单内加入错误提示框
+	<form:errors path="*" id="msg" cssClass="errors" element="div" htmlEscape="false" />
+	测试：输入错误的用户名和密码，提示是英文。这个提示信息是在WEB-INF\classes目录下的messages.properties文件中
+	authenticationFailure.AccountNotFoundException=Invalid credentials.
+	authenticationFailure.FailedLoginException=Invalid credentials.
+	设置国际化为zn_CN  ,修改cas-servlet.xml
+	<bean id="localeResolver" class="org.springframework.web.servlet.i18n.CookieLocaleResolver" p:defaultLocale="zh_CN" />
+	我们需要将此信息拷贝到messages_zh_CN.properties下，并改为中文提示（转码）
+	authenticationFailure.AccountNotFoundException=\u7528\u6237\u4E0D\u5B58\u5728
+	authenticationFailure.FailedLoginException=\u5BC6\u7801\u9519\u8BEF
+	第一个是用户名不存在时的错误提示
+	第二个是密码错误的提示
+
+温馨提示: 若数据库连接不通,检查真实机和虚拟机的防火墙设置,真实机在cmd下和虚拟机在窗口下互ping,ping不通时,可能防火墙为开启状态,将防火墙关闭
+	
+
+	
+	
+	
+		
+	
+		
+	
+	
+
+	
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
