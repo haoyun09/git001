@@ -1,86 +1,78 @@
-安装软件,JDK,Tomcat,MySQL,redis,zookeeper,solr,cas
+linux中用户磁盘以及软件环境搭建
 
-	jdk-java开发工具包
-	tomcat-服务器,处理请求,响应数据
-	mysql-数据库
-	redis-基于内存的非关系型数据库
-	zookeeper-远程调用
-	solr-搜索引擎
-	cas-单点登录
+零 基础操作
+一 jdk-java开发工具包
+二 tomcat-web服务器,处理请求,响应数据
+三 nginx-反向代理负载均衡web容器
+四 mysql-数据库
+五 redis-基于内存的非关系型数据库
+六 fastdfs-分布式文件存储
+七 zookeeper-远程调用
+八 solr-搜索引擎
+九 cas-单点登录
+十 springboot项目启停脚本实例
 
-软件开启命令
-			
-	zookeeper开启
-		进入zookeeper安装目录
-			[root@hostname ~]# cd /usr/local/zookeeper/zookeeper/bin
-		开启服务
-			[root@hostname bin]# ./zkServer.sh start 
-			JMX enabled by default
-			Using config: /usr/local/zookeeper/zookeeper/bin/../conf/zoo.cfg
-			Starting zookeeper ... already running as process 3683.
-		查看开启状态
-			[root@hostname bin]# ./zkServer.sh status
-			JMX enabled by default
-			Using config: /usr/local/zookeeper/zookeeper/bin/../conf/zoo.cfg
-			Mode: standalone
-		关闭服务
-			[root@hostname bin]# ./zkServer.sh stop
-			JMX enabled by default
-			Using config: /usr/local/zookeeper/zookeeper/bin/../conf/zoo.cfg
-			Stopping zookeeper ... STOPPED
 
-	redis的开启
-		进入redis安装目录
-			[root@hostname ~]# cd /usr/local/redis/6379/bin
-		开启服务端,配置文件后端开启
-			[root@hostname bin]# ./redis-server ./redis.conf
-		开启客户端
-			[root@hostname bin]# ./redis-cli
-		ping命令
-			127.0.0.1:6379> ping
-			PONG
-			127.0.0.1:6379>
+基础操作,用户和组管理
+	查看用户
+		id appuser
 
+	若无用户和对应组,新建
+		添加组
+		groupadd appuser
+
+		添加用户
+		useradd -d /app -m appuser
+
+		修改用户
+		usermod -g appuser appuser
+
+		修改用户密码
+		passwd appuser
+		su appuser
 		
-	solr的开启,即开启tomcat
-		进入tomcat安装目录
-			[root@hostname ~]# cd /usr/local/solr/tomcat/bin
-		关闭命令
-			[root@hostname bin]# ./shutdown.sh
-			Using CATALINA_BASE:   /usr/local/solr/tomcat
-			Using CATALINA_HOME:   /usr/local/solr/tomcat
-			Using CATALINA_TMPDIR: /usr/local/solr/tomcat/temp
-			Using JRE_HOME:        /usr/local/java/jdk1.7.0_55
-			Using CLASSPATH:       /usr/local/solr/tomcat/bin/bootstrap.jar:/usr/local/solr/tomcat/bin/tomcat-juli.jar
-		开启命令
-			[root@hostname bin]# ./startup.sh
-			Using CATALINA_BASE:   /usr/local/solr/tomcat
-			Using CATALINA_HOME:   /usr/local/solr/tomcat
-			Using CATALINA_TMPDIR: /usr/local/solr/tomcat/temp
-			Using JRE_HOME:        /usr/local/java/jdk1.7.0_55
-			Using CLASSPATH:       /usr/local/solr/tomcat/bin/bootstrap.jar:/usr/local/solr/tomcat/bin/tomcat-juli.jar
-			[root@hostname bin]# 
-			
-	cas的开启,即开启tomcat
-		进入tomcat安装目录
-			[root@hostname ~]# cd /usr/local/cas/tomcat/bin
-		关闭命令
-			[root@hostname bin]# ./shutdown.sh
-			Using CATALINA_BASE:   /usr/local/cas/tomcat
-			Using CATALINA_HOME:   /usr/local/cas/tomcat
-			Using CATALINA_TMPDIR: /usr/local/cas/tomcat/temp
-			Using JRE_HOME:        /usr/local/java/jdk1.7.0_55
-			Using CLASSPATH:       /usr/local/cas/tomcat/bin/bootstrap.jar:/usr/local/cas/tomcat/bin/tomcat-juli.jar
-		开启命令
-			[root@hostname bin]# ./startup.sh
-			Using CATALINA_BASE:   /usr/local/cas/tomcat
-			Using CATALINA_HOME:   /usr/local/cas/tomcat
-			Using CATALINA_TMPDIR: /usr/local/cas/tomcat/temp
-			Using JRE_HOME:        /usr/local/java/jdk1.7.0_55
-			Using CLASSPATH:       /usr/local/cas/tomcat/bin/bootstrap.jar:/usr/local/cas/tomcat/bin/tomcat-juli.jar
+基础操作,赋权
+	使用root用户给appuser用户赋予sudo权限
+	vim /etc/sudoers
+		root    ALL=(ALL) ALL
+		appuser ALL=(ALL) NOPASSWD:ALL
+		%appuser ALL=(ALL) NOPASSWD:ALL
+		
+		appuser组和用户执行sudo命令,且不需要密码
+
+	使用root用户或者有sudo权限的用户执行
+		赋权文件夹给nginx用户
+		chown -R nginx www/
+
+		赋权文件夹给nginx用户组
+		chgrp -R nginx www/
+
+基础操作,非root用户配置jdk环境变量
+	jdk环境变量,修改用户家目录下隐藏文件.bash_profile
+		vi .bash_profile
+			export JAVA_HOME=/app/jdk
+			export PATH=$PATH:$JAVA_HOME/bin
+		使文件生效
+		source .bash_profile
+		java -version
+
+
+基础操作,服务器之间传输文件
+	原服务器目录压缩
+	tar -zcvf app.tar.gz apppro/ appadmin/ 
+		apppro -- 应用springboot项目利用maven插件打jar包
+		appadmin -- 应用启停脚本
+
+	利用scp传输文件
+	scp -P 16022 app.tar.gz appuser@10.200.100.123:/app/
+		输入用户对应密码
+
+	新服务器上文件解压
+	tar -zxvf  appapp.tar.gz
 	
 
-一、JDK的安装
+
+一. JDK的安装
 Java依赖下载
 	yum install glibc.i686
 	
@@ -96,7 +88,7 @@ Java依赖下载
 		rpm -e --nodeps java-1.7.0-openjdk-1.7.0.45-2.4.3.3.el6.i686
 
 3.上传文件
-	按下alt+p打开文件上传窗口，将需要安装的JDK压缩包(jdk-7u71-linux-i586.tar.gz)拖拽到文件上传窗口！
+	按下alt+p打开文件上传窗口,将需要安装的JDK压缩包(jdk-7u71-linux-i586.tar.gz)拖拽到文件上传窗口！
 	
 4.解压文件
 	执行指令：tar -zxvf jdk-7u71-linux-i586.tar.gz
@@ -110,7 +102,7 @@ Java依赖下载
 
 7.配置环境变量
 	执行指令：vim /etc/profile
-	输入i进入插入模式，将光标移动文件的末尾，将以下2行带粘贴上去，按下Esc退出插入模式到一般模式，输入:wq保存退出！
+	输入i进入插入模式,将光标移动文件的末尾,将以下2行带粘贴上去,按下Esc退出插入模式到一般模式,输入:wq保存退出！
 		export JAVA_HOME=/usr/local/src/java/jdk1.7.0_71
 		export PATH=$JAVA_HOME/bin:$PATH
 
@@ -120,14 +112,14 @@ Java依赖下载
 
 9.测试
 	在任意目录执行指令：java -version
-	出现以下内容，说明JDK安装配置OK！
+	出现以下内容,说明JDK安装配置OK！
 		java version "1.7.0_71"
 		Java(TM) SE Runtime Environment (build 1.7.0_71-b14)
 		Java HotSpot(TM) Client VM (build 24.71-b01, mixed mode)
 
-二、Tomcat的安装
+二. Tomcat的安装
 1.上传文件
-	按下alt+p打开文件上传窗口，将需要安装的Tomcat压缩包(apache-tomcat-7.0.57.tar.gz)拖拽到文件上传窗口！
+	按下alt+p打开文件上传窗口,将需要安装的Tomcat压缩包(apache-tomcat-7.0.57.tar.gz)拖拽到文件上传窗口！
 
 2.解压文件
 	执行指令：tar -zxvf apache-tomcat-7.0.57.tar.gz
@@ -138,8 +130,8 @@ Java依赖下载
 
 4.配置防火墙
 	执行指令：vim /etc/sysconfig/iptables
-	输入i进入插入模式，将光标移到端口为22所在行的末尾，回车，复制22端口所在行的内容，粘贴在下一行，并将下一行的22改为8080
-	按下Esc退出插入模式到一般模式，输入:wq保存退出！
+	输入i进入插入模式,将光标移到端口为22所在行的末尾,回车,复制22端口所在行的内容,粘贴在下一行,并将下一行的22改为8080
+	按下Esc退出插入模式到一般模式,输入:wq保存退出！
 
 5.重启防火墙
 	执行指令：service iptables restart
@@ -150,13 +142,340 @@ Java依赖下载
 
 7.测试
 	在浏览器地址栏输入： http://192.168.59.153:8080 
-	如果进入Tomcat主页，说明Tomcat安装配置OK！
+	如果进入Tomcat主页,说明Tomcat安装配置OK！
 
 8.停止Tomcat
 	进入目录：cd /usr/local/src/java
 	执行指令：./apache-tomcat-7.0.57/bin/shutdown.sh
+	
+	
+三. 安装nginx
+1.1 选择稳定版本
+	我们编译安装nginx来定制自己的模块，机器CentOS 6.2 x86_64。首先安装缺少的依赖包：
+	# yum -y install gcc gcc-c++ make libtool zlib zlib-devel openssl openssl-devel pcre pcre-devel
+	这些软件包如果yum上没有的话可以下载源码来编译安装，只是要注意编译时默认安装的目录，确保下面在安装nginx时能够找到这些动态库文件（ldconfig）
 
-三、MySQL的安装
+	从 http://nginx.org/en/download.html 下载稳定版nginx-1.6.3.tar.gz到/usr/local/src下解压
+
+	为了后续准备我们另外下载2个插件模块：
+		nginx_upstream_check_module-0.3.0.tar.gz ——检查后端服务器的状态，
+		nginx-goodies-nginx-sticky-module-ng-bd312d586752.tar.gz —— 后端做负载均衡解决session sticky问题
+		（与upstream_check模块结合使用需要另外打补丁，请参考nginx负载均衡配置实战）
+		（建议在/usr/local/src下解压后将目录重命名为nginx-sticky-module-ng-1.2.5） 
+
+	请注意插件与nginx的版本兼容问题，一般插件越新越好，nginx不用追新，稳定第一。
+		nginx-1.4.7，nginx-sticky-module-1.1，nginx_upstream_check_module-0.2.0，这个搭配也没问题。
+		sticky-1.1与nginx-1.6版本由于更新没跟上编译出错。（可以直接使用Tengine，默认就包括了这些模块）
+		[root@cachets nginx-1.6.3]# pwd
+		/usr/local/src/nginx-1.6.3
+		[root@cachets nginx-1.6.3]# ./configure --prefix=/usr/local/nginx-1.6 --with-pcre \
+		> --with-http_stub_status_module --with-http_ssl_module \
+		> --with-http_gzip_static_module --with-http_realip_module \
+		> --add-module=../nginx_upstream_check_module-0.3.0	  
+		[root@cachets nginx-1.6.3]# make && make install
+1.2 常用编译选项说明
+	nginx大部分常用模块，编译时./configure --help以--without开头的都默认安装。
+	--prefix=PATH ： 指定nginx的安装目录。默认 /usr/local/nginx
+	--conf-path=PATH ： 设置nginx.conf配置文件的路径。nginx允许使用不同的配置文件启动，通过命令行中的-c选项。默认为prefix/conf/nginx.conf
+	--user=name： 设置nginx工作进程的用户。安装完成后，可以随时在nginx.conf配置文件更改user指令。默认的用户名是nobody。--group=name类似
+	--with-pcre ： 设置PCRE库的源码路径，如果已通过yum方式安装，使用--with-pcre自动找到库文件。使用--with-pcre=PATH时，需要从PCRE网站下载pcre库的源码（版本4.4 – 8.30）并解压，剩下的就交给Nginx的./configure和make来完成。perl正则表达式使用在location指令和 ngx_http_rewrite_module模块中。
+	--with-zlib=PATH ： 指定 zlib（版本1.1.3 – 1.2.5）的源码解压目录。在默认就启用的网络传输压缩模块ngx_http_gzip_module时需要使用zlib 。
+	--with-http_ssl_module ： 使用https协议模块。默认情况下，该模块没有被构建。前提是openssl与openssl-devel已安装
+	--with-http_stub_status_module ： 用来监控 Nginx 的当前状态
+	--with-http_realip_module ： 通过这个模块允许我们改变客户端请求头中客户端IP地址值(例如X-Real-IP 或 X-Forwarded-For)，意义在于能够使得后台服务器记录原始客户端的IP地址
+	--add-module=PATH ： 添加第三方外部模块，如nginx-sticky-module-ng或缓存模块。每次添加新的模块都要重新编译（Tengine可以在新加入module时无需重新编译）
+	再提供一种编译方案：
+		./configure \
+		> --prefix=/usr \
+		> --sbin-path=/usr/sbin/nginx \
+		> --conf-path=/etc/nginx/nginx.conf \
+		> --error-log-path=/var/log/nginx/error.log \
+		> --http-log-path=/var/log/nginx/access.log \
+		> --pid-path=/var/run/nginx/nginx.pid \
+		> --lock-path=/var/lock/nginx.lock \
+		> --user=nginx \
+		> --group=nginx \
+		> --with-http_ssl_module \
+		> --with-http_stub_status_module \
+		> --with-http_gzip_static_module \
+		> --http-client-body-temp-path=/var/tmp/nginx/client/ \
+		> --http-proxy-temp-path=/var/tmp/nginx/proxy/ \
+		> --http-fastcgi-temp-path=/var/tmp/nginx/fcgi/ \
+		> --http-uwsgi-temp-path=/var/tmp/nginx/uwsgi \
+		> --with-pcre=../pcre-7.8
+		> --with-zlib=../zlib-1.2.3
+1.3 启动关闭nginx
+	## 检查配置文件是否正确
+	# /usr/local/nginx-1.6/sbin/nginx -t
+	# ./sbin/nginx -V # 可以看到编译选项
+	  
+	## 启动、关闭
+	# ./sbin/nginx # 默认配置文件 conf/nginx.conf，-c 指定
+	# ./sbin/nginx -s stop
+	或 pkill nginx
+	  
+	## 重启，不会改变启动时指定的配置文件
+	# ./sbin/nginx -s reload
+	或 kill -HUP `cat /usr/local/nginx-1.6/logs/nginx.pid`
+	当然也可以将 nginx 作为系统服务管理，下载 nginx 到/etc/init.d/，修改里面的路径然后赋予可执行权限。
+
+	# service nginx {start|stop|status|restart|reload|configtest}
+1.4 yum安装
+	yum安装rpm包会比编译安装简单很多，默认会安装许多模块，但缺点是如果你想以后安装第三方模块那就没办法了。
+	# vi /etc/yum.repo.d/nginx.repo
+	[nginx]
+	name=nginx repo
+	baseurl=http://nginx.org/packages/centos/$releasever/$basearch/
+	gpgcheck=0
+	enabled=1
+	剩下的就yum install nginx搞定，也可以yum install nginx-1.6.3安装指定版本（前提是你去packages里看到有对应的版本，默认是最新版稳定版）。
+
+2. nginx.conf配置文件
+	Nginx配置文件主要分成四部分：
+	main（全局设置）
+		main部分设置的指令将影响其它所有部分的设置；server部分的指令主要用于指定虚拟主机域名、IP和端口；
+	server（主机设置）
+	upstream（上游服务器设置，主要为反向代理、负载均衡相关配置）
+		upstream的指令用于设置一系列的后端服务器，设置反向代理及后端服务器的负载均衡；
+	location（URL匹配特定位置后的设置），每部分包含若干个指令。
+		location部分用于匹配网页位置（比如，根目录“/”,“/images”,等等）。
+	他们之间的关系式：server继承main，location继承server；upstream既不会继承指令也不会被继承。它有自己的特殊指令，不需要在其他地方的应用。
+
+	当前nginx支持的几个指令上下文：
+2.1 通用
+	下面的nginx.conf简单的实现nginx在前端做反向代理服务器的例子，处理js、png等静态文件，jsp等动态请求转发到其它服务器tomcat：
+		user www www;
+		worker_processes 2;
+		  
+		error_log logs/error.log;
+		#error_log logs/error.log notice;
+		#error_log logs/error.log info;
+		  
+		pid logs/nginx.pid;
+		  
+		  
+		events {
+			use epoll;
+			worker_connections 2048;
+		}
+		  
+		  
+		http {
+			include mime.types;
+			default_type application/octet-stream;
+			  
+			#log_format main '$remote_addr - $remote_user [$time_local] "$request" '
+			# '$status $body_bytes_sent "$http_referer" '
+			# '"$http_user_agent" "$http_x_forwarded_for"';
+			  
+			#access_log logs/access.log main;
+			  
+			sendfile on;
+			# tcp_nopush on;
+			  
+			keepalive_timeout 65;
+			  
+			# gzip压缩功能设置
+			gzip on;
+			gzip_min_length 1k;
+			gzip_buffers 4 16k;
+			gzip_http_version 1.0;
+			gzip_comp_level 6;
+			gzip_types text/html text/plain text/css text/javascript application/json application/javascript application/x-javascript application/xml;
+			gzip_vary on;
+			  
+			# http_proxy 设置
+			client_max_body_size 10m;
+			client_body_buffer_size 128k;
+			proxy_connect_timeout 75;
+			proxy_send_timeout 75;
+			proxy_read_timeout 75;
+			proxy_buffer_size 4k;
+			proxy_buffers 4 32k;
+			proxy_busy_buffers_size 64k;
+			proxy_temp_file_write_size 64k;
+			proxy_temp_path /usr/local/nginx/proxy_temp 1 2;
+			  
+		# 设定负载均衡后台服务器列表
+		upstream backend {
+			#ip_hash;
+			server 192.168.10.100:8080 max_fails=2 fail_timeout=30s ;
+			server 192.168.10.101:8080 max_fails=2 fail_timeout=30s ;
+		}
+		  
+		# 很重要的虚拟主机配置
+		server {
+			listen 80;
+			server_name itoatest.example.com;
+			root /apps/oaapp;
+			  
+			charset utf-8;
+			access_log logs/host.access.log main;
+			  
+			#对 / 所有做负载均衡+反向代理
+			location / {
+				root /apps/oaapp;
+				index index.jsp index.html index.htm;
+				  
+				proxy_pass http://backend;
+				proxy_redirect off;
+				# 后端的Web服务器可以通过X-Forwarded-For获取用户真实IP
+				proxy_set_header Host $host;
+				proxy_set_header X-Real-IP $remote_addr;
+				proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+				proxy_next_upstream error timeout invalid_header http_500 http_502 http_503 http_504;
+				  
+			}
+			  
+			#静态文件，nginx自己处理，不去backend请求tomcat
+			location ~* /download/ {
+				root /apps/oa/fs;
+			  
+			}
+			location ~ .*\.(gif|jpg|jpeg|bmp|png|ico|txt|js|css)$
+			{
+				root /apps/oaapp;
+				expires 7d;
+			}
+			location /nginx_status {
+				stub_status on;
+				access_log off;
+				allow 192.168.10.0/24;
+				deny all;
+			}
+			  
+			location ~ ^/(WEB-INF)/ {
+				deny all;
+			}
+			#error_page 404 /404.html;
+			  
+			# redirect server error pages to the static page /50x.html
+			#
+			error_page 500 502 503 504 /50x.html;
+			location = /50x.html {
+				root html;
+			}
+		}
+		  
+		## 其它虚拟主机，server 指令开始
+	}
+2.2 常用指令说明
+2.2.1 main全局配置
+	nginx在运行时与具体业务功能（比如http服务或者email服务代理）无关的一些参数，比如工作进程数，运行的身份等。
+
+	woker_processes 2
+	在配置文件的顶级main部分，worker角色的工作进程的个数，master进程是接收并分配请求给worker处理。这个数值简单一点可以设置为cpu的核数grep ^processor /proc/cpuinfo | wc -l，也是 auto 值，如果开启了ssl和gzip更应该设置成与逻辑CPU数量一样甚至为2倍，可以减少I/O操作。如果nginx服务器还有其它服务，可以考虑适当减少。
+	worker_cpu_affinity
+	也是写在main部分。在高并发情况下，通过设置cpu粘性来降低由于多CPU核切换造成的寄存器等现场重建带来的性能损耗。如worker_cpu_affinity 0001 0010 0100 1000; （四核）。
+	worker_connections 2048
+	写在events部分。每一个worker进程能并发处理（发起）的最大连接数（包含与客户端或后端被代理服务器间等所有连接数）。nginx作为反向代理服务器，计算公式 最大连接数 = worker_processes * worker_connections/4，所以这里客户端最大连接数是1024，这个可以增到到8192都没关系，看情况而定，但不能超过后面的worker_rlimit_nofile。当nginx作为http服务器时，计算公式里面是除以2。
+	worker_rlimit_nofile 10240
+	写在main部分。默认是没有设置，可以限制为操作系统最大的限制65535。
+	use epoll
+	写在events部分。在Linux操作系统下，nginx默认使用epoll事件模型，得益于此，nginx在Linux操作系统下效率相当高。同时Nginx在OpenBSD或FreeBSD操作系统上采用类似于epoll的高效事件模型kqueue。在操作系统不支持这些高效模型时才使用select。
+2.2.2 http服务器
+	与提供http服务相关的一些配置参数。例如：是否使用keepalive啊，是否使用gzip进行压缩等。
+
+	sendfile on
+	开启高效文件传输模式，sendfile指令指定nginx是否调用sendfile函数来输出文件，减少用户空间到内核空间的上下文切换。对于普通应用设为 on，如果用来进行下载等应用磁盘IO重负载应用，可设置为off，以平衡磁盘与网络I/O处理速度，降低系统的负载。
+	keepalive_timeout 65 : 长连接超时时间，单位是秒，这个参数很敏感，涉及浏览器的种类、后端服务器的超时设置、操作系统的设置，可以另外起一片文章了。长连接请求大量小文件的时候，可以减少重建连接的开销，但假如有大文件上传，65s内没上传完成会导致失败。如果设置时间过长，用户又多，长时间保持连接会占用大量资源。
+	send_timeout : 用于指定响应客户端的超时时间。这个超时仅限于两个连接活动之间的时间，如果超过这个时间，客户端没有任何活动，Nginx将会关闭连接。
+	client_max_body_size 10m
+	允许客户端请求的最大单文件字节数。如果有上传较大文件，请设置它的限制值
+	client_body_buffer_size 128k
+	缓冲区代理缓冲用户端请求的最大字节数
+	模块http_proxy：
+	这个模块实现的是nginx作为反向代理服务器的功能，包括缓存功能（另见文章）
+
+	proxy_connect_timeout 60
+	nginx跟后端服务器连接超时时间(代理连接超时)
+	proxy_read_timeout 60
+	连接成功后，与后端服务器两个成功的响应操作之间超时时间(代理接收超时)
+	proxy_buffer_size 4k
+	设置代理服务器（nginx）从后端realserver读取并保存用户头信息的缓冲区大小，默认与proxy_buffers大小相同，其实可以将这个指令值设的小一点
+	proxy_buffers 4 32k
+	proxy_buffers缓冲区，nginx针对单个连接缓存来自后端realserver的响应，网页平均在32k以下的话，这样设置
+	proxy_busy_buffers_size 64k
+	高负荷下缓冲大小（proxy_buffers*2）
+	proxy_max_temp_file_size
+	当 proxy_buffers 放不下后端服务器的响应内容时，会将一部分保存到硬盘的临时文件中，这个值用来设置最大临时文件大小，默认1024M，它与 proxy_cache 没有关系。大于这个值，将从upstream服务器传回。设置为0禁用。
+	proxy_temp_file_write_size 64k
+	当缓存被代理的服务器响应到临时文件时，这个选项限制每次写临时文件的大小。proxy_temp_path（可以在编译的时候）指定写到哪那个目录。
+	proxy_pass，proxy_redirect见 location 部分。
+
+	模块http_gzip：
+
+	gzip on : 开启gzip压缩输出，减少网络传输。
+	gzip_min_length 1k ： 设置允许压缩的页面最小字节数，页面字节数从header头得content-length中进行获取。默认值是20。建议设置成大于1k的字节数，小于1k可能会越压越大。
+	gzip_buffers 4 16k ： 设置系统获取几个单位的缓存用于存储gzip的压缩结果数据流。4 16k代表以16k为单位，安装原始数据大小以16k为单位的4倍申请内存。
+	gzip_http_version 1.0 ： 用于识别 http 协议的版本，早期的浏览器不支持 Gzip 压缩，用户就会看到乱码，所以为了支持前期版本加上了这个选项，如果你用了 Nginx 的反向代理并期望也启用 Gzip 压缩的话，由于末端通信是 http/1.0，故请设置为 1.0。
+	gzip_comp_level 6 ： gzip压缩比，1压缩比最小处理速度最快，9压缩比最大但处理速度最慢(传输快但比较消耗cpu)
+	gzip_types ：匹配mime类型进行压缩，无论是否指定,”text/html”类型总是会被压缩的。
+	gzip_proxied any ： Nginx作为反向代理的时候启用，决定开启或者关闭后端服务器返回的结果是否压缩，匹配的前提是后端服务器必须要返回包含”Via”的 header头。
+	gzip_vary on ： 和http头有关系，会在响应头加个 Vary: Accept-Encoding ，可以让前端的缓存服务器缓存经过gzip压缩的页面，例如，用Squid缓存经过Nginx压缩的数据。。
+2.2.3 server虚拟主机
+	http服务上支持若干虚拟主机。每个虚拟主机一个对应的server配置项，配置项里面包含该虚拟主机相关的配置。
+	在提供mail服务的代理时，也可以建立若干server。每个server通过监听地址或端口来区分。
+		listen
+		监听端口，默认80，小于1024的要以root启动。可以为listen *:80、listen 127.0.0.1:80等形式。
+		server_name
+		服务器名，如localhost、www.example.com，可以通过正则匹配。
+		模块http_stream
+		这个模块通过一个简单的调度算法来实现客户端IP到后端服务器的负载均衡，upstream后接负载均衡器的名字，后端realserver以 host:port options; 方式组织在 {} 中。如果后端被代理的只有一台，也可以直接写在 proxy_pass 。
+
+2.2.4 location
+	http服务中，某些特定的URL对应的一系列配置项。
+
+		root /var/www/html
+		定义服务器的默认网站根目录位置。如果locationURL匹配的是子目录或文件，root没什么作用，一般放在server指令里面或/下。
+		index index.jsp index.html index.htm
+		定义路径下默认访问的文件名，一般跟着root放
+		proxy_pass http:/backend
+		请求转向backend定义的服务器列表，即反向代理，对应upstream负载均衡器。也可以proxy_pass http://ip:port。
+		proxy_redirect off;
+		proxy_set_header Host $host;
+		proxy_set_header X-Real-IP $remote_addr;
+		proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+		这四个暂且这样设，如果深究的话，每一个都涉及到很复杂的内容，也将通过另一篇文章来解读。
+		关于location匹配规则的写法，可以说尤为关键且基础的，参考文章 nginx配置location总结及rewrite规则写法;
+
+2.3 其它
+2.3.1 访问控制 allow/deny
+	Nginx 的访问控制模块默认就会安装，而且写法也非常简单，可以分别有多个allow,deny，允许或禁止某个ip或ip段访问，依次满足任何一个规则就停止往下匹配。如：
+		location /nginx-status {
+			stub_status on;
+			access_log off;
+			# auth_basic "NginxStatus";
+			# auth_basic_user_file /usr/local/nginx-1.6/htpasswd;
+			  
+			allow 192.168.10.100;
+			allow 172.29.73.0/24;
+			deny all;
+		}
+	我们也常用 httpd-devel 工具的 htpasswd 来为访问的路径设置登录密码：
+		# htpasswd -c htpasswd admin
+		New passwd:
+		Re-type new password:
+		Adding password for user admin
+		  
+		# htpasswd htpasswd admin //修改admin密码
+		# htpasswd htpasswd sean //多添加一个认证用户
+		这样就生成了默认使用CRYPT加密的密码文件。打开上面nginx-status的两行注释，重启nginx生效。
+
+2.3.2 列出目录 autoindex
+	Nginx默认是不允许列出整个目录的。如需此功能，打开nginx.conf文件，在location，server 或 http段中加入autoindex on;，另外两个参数最好也加上去:
+	autoindex_exact_size off; 默认为on，显示出文件的确切大小，单位是bytes。改为off后，显示出文件的大概大小，单位是kB或者MB或者GB
+	autoindex_localtime on;
+	默认为off，显示的文件时间为GMT时间。改为on后，显示的文件时间为文件的服务器时间
+		location /images {
+			root /var/www/nginx-default/images;
+			autoindex on;
+			autoindex_exact_size off;
+			autoindex_localtime on;
+		}	
+
+
+四. MySQL的安装
 MySQL依赖下载
 	yum -y install libaio.so.1 libgcc_s.so.1 libstdc++.so.6
 
@@ -168,7 +487,7 @@ MySQL依赖下载
 	执行指令：rpm -e --nodeps mysql-libs-5.1.71-1.el6.i686
 
 3.上传文件
-	按下alt+p打开文件上传窗口，将需要安装MySQL的2个rpm文件拖拽到文件上传窗口！
+	按下alt+p打开文件上传窗口,将需要安装MySQL的2个rpm文件拖拽到文件上传窗口！
 		MySQL-server-5.5.49-1.linux2.6.i386.rpm
 		MySQL-client-5.5.49-1.linux2.6.i386.rpm
 
@@ -176,7 +495,7 @@ MySQL依赖下载
 	执行指令：rpm -ivh MySQL-server-5.5.49-1.linux2.6.i386.rpm
 
 	注意提示信息：PLEASE REMEMBER TO SET A PASSWORD FOR THE MySQL root USER !
-		首次进入MySQL不需要输入用户名和密码，但是进入之后一定要记得为root用户设置一个密码！！！！
+		首次进入MySQL不需要输入用户名和密码,但是进入之后一定要记得为root用户设置一个密码！！！！
 
 5.安装client
 	执行指令：rpm -ivh MySQL-client-5.5.49-1.linux2.6.i386.rpm
@@ -186,23 +505,50 @@ MySQL依赖下载
 	
 7.进入MySQL
 	直接输入： mysql
-	为root账户设置密码，执行指令：set password = password('root');
+	为root账户设置密码,执行指令：set password = password('root');
 
 8.配置防火墙
 	执行指令：vim /etc/sysconfig/iptables
-	输入i进入插入模式，将光标移到端口为8080所在行的末尾，回车，
-	复制8080端口所在行的内容，粘贴在下一行，并将下一行的8080改为3306
-	按下Esc退出插入模式到一般模式，输入:wq保存退出！
+	输入i进入插入模式,将光标移到端口为8080所在行的末尾,回车,
+	复制8080端口所在行的内容,粘贴在下一行,并将下一行的8080改为3306
+	按下Esc退出插入模式到一般模式,输入:wq保存退出！
 
 9.重启防火墙
 	执行指令：service iptables restart
 
 10.创建账户并授权
 	先得进入MySQL
-	执行以下三行MySQL的命令：
-		create user 'root'@'%' identified by 'root';		#创建用户，并设置密码
-		grant all on *.* to 'root'@'%' with grant option;	#给指定的用户授权
-		flush privileges;									#刷新权限
+	登陆mysql
+	cd /mysql/app/5.7.26/bin/
+	./mysql -uroot -pMysql@123 -P 3309 -S /mysqldata/3309/socket/mysql.sock
+
+	为方便,将以上命令写成脚本
+	vim mysql_connect.sh
+		#!/bin/bash
+		cd /mysql/app/5.7.26/bin/
+		./mysql -uroot -pMysql@123 -P 3309 -S /mysqldata/3309/socket/mysql.sock
+	 
+	登陆mysql
+	sh mysql_connect.sh
+	
+	#创建用户,并设置密码
+	CREATE USER 'appdb'@'%' IDENTIFIED BY 'App@123!';
+	#给指定的用户授权
+	GRANT ALL PRIVILEGES ON *.* TO 'appdb'@'%';
+	#刷新权限
+	FLUSH PRIVILEGES;
+
+	#创建数据库
+	CREATE DATABASE appdb;
+
+	#查看数据库
+	show databases;
+
+	#使用数据库
+	use appdb;
+
+	#导入建表语句
+	source /app/dbbak/appdb.sql
 
 11.在windows中访问Linux里面的MySQL
 	按下win+r,输入cmd打开DOS窗口
@@ -210,16 +556,57 @@ MySQL依赖下载
 		mysql -h 192.168.59.153 -u root -p
 		root
 
-12.使用Navicat工具
-	点击连接，选择MySQL，输入连接名称，修改主机(ip地址)，输入密码，点击确定！
+12.mysql数据库的远程连接
+	Mysql为了安全性,在默认情况下用户只允许在本地登录,可是在有此情况下,还是需要使用用户进行远程连接,
+	因此为了使其可以远程需要进行操作,允许root用户在任何地方进行远程登录,并具有所有库任何操作权限
+	
+	mysql -u root -p
+
+    查看user表
+
+	mysql> use mysql;
+	Database changed
+	mysql> select host,user,password from user;
+	+--------------+------+-------------------------------------------+
+	| host         | user | password                                  |
+	+--------------+------+-------------------------------------------+
+	| localhost    | root | *A731AEBFB621E354CD41BAF207D884A609E81F5E |
+	| 192.168.1.1  | root | *A731AEBFB621E354CD41BAF207D884A609E81F5E |
+	+--------------+------+-------------------------------------------+
+	2 rows in set (0.00 sec)
+	
+	mysql> update user set host='%' where user='root';
+
+   将权限改为ALL PRIVILEGES
+
+	mysql> use mysql;
+	Database changed
+	mysql> grant all privileges  on *.* to root@'%' identified by 'root';
+	Query OK, 0 rows affected (0.00 sec)
+
+	mysql> flush privileges;
+	Query OK, 0 rows affected (0.00 sec)
+
+	mysql> select host,user,password from user;
+	+--------------+------+-------------------------------------------+
+	| host         | user | password                                  |
+	+--------------+------+-------------------------------------------+
+	| localhost    | root | *A731AEBFB621E354CD41BAF207D884A609E81F5E |
+	| 192.168.1.1  | root | *A731AEBFB621E354CD41BAF207D884A609E81F5E |
+	| %            | root | *A731AEBFB621E354CD41BAF207D884A609E81F5E |
+	+--------------+------+-------------------------------------------+
+	3 rows in set (0.00 sec)
+
+	测试：mysql图形工具Navicat等,新建连接,输入本机连接虚拟机的虚拟网卡上的ip
+	点击连接,选择MySQL,输入连接名称,修改主机(ip地址),输入密码,点击测试连接！
 	
 
-四、redis的安装
+五. redis的安装
 Redis的依赖下载
 	yum install gcc-c++
 	
 1.上传文件
-	按下alt+p打开文件上传窗口，将需要安装的redis压缩包(redis-3.0.0.tar.gz)拖拽到文件上传窗口！
+	按下alt+p打开文件上传窗口,将需要安装的redis压缩包(redis-3.0.0.tar.gz)拖拽到文件上传窗口！
 	进入根目录下查看
 		进入 cd /root/
 		查看 ll -h
@@ -250,7 +637,7 @@ Redis的依赖下载
 	执行命令：ll
 	
 7.编译,源码安装,C语言,需要先编译
-	编译之前，必须下载gcc依赖,编译器！
+	编译之前,必须下载gcc依赖,编译器！
 	一定要进入指定目录：redis-3.0.0	
 	执行指令：yum install gcc-c++  【请确保处于联网状态】
 
@@ -284,24 +671,163 @@ Redis的依赖下载
 14.修改配置文件
 	执行指令：cd /usr/local/redis/6379/bin/   【进入了bin目录】
 	执行编辑指令：vim redis.conf
-		输入i进入插入模式，将光标移到第38行，复制37行的内容粘贴到38行，改no为yes，
-		按下Esc退出插入模式到一般模式，输入:wq保存退出
+		输入i进入插入模式,将光标移到第38行,复制37行的内容粘贴到38行,改no为yes,daemonize yes
+		requirepass 修改密码
+		按下Esc退出插入模式到一般模式,输入:wq保存退出
+	6389.conf 配置文件截选
+		bind 192.168.114.146 
+			# 有时候为了安全起见，redis一般都是监听127.0.0.1 但是有时候又有同网段能连接的需求
+			# 当然可以绑定0.0.0.0 用iptables来控制访问权限，或者设置redis访问密码来保证数据安全
+		port 6389 
+		pidfile /redis/pid/6389.pid
+			# 当以守护进程方式运行的时候,Redis会把进程ID默认写到 /var/run/redis.pid。你可以在这里修改路径
+		logfile /redis/log/6389.log
+		requirepass Redis@123 
+		masterauth Redis@123
+			# 如果master设置了密码（通过下面的 "requirepass" 选项来配置），那么slave在开始同步之前必须进行身份验证，否则它的同步请求会被拒绝
+		protected-mode no
+		daemonize yes
+			# Redis默认是不作为守护进程来运行的。你可以把这个设置为"yes"让它作为守护进程来运行。 
+			# 注意,当作为守护进程的时候,Redis会把进程ID写到 /var/run/redis.pid
+		supervised no
+		loglevel verbose
+		databases 16
+			# 设置数据库个数。默认数据库是 DB 0,你可以通过SELECT <dbid> WHERE dbid（0～'databases' - 1）来为每个连接指定数据库id
+		tcp-backlog 511
+		timeout 0
+		tcp-keepalive 300
 
-15.启动Redis,在bin目录下
-	执行指令：./redis-server ./redis.conf
+
+15.进入redis的bin目录开启和关闭redis服务
+	redis的开启
+		进入redis安装目录的bin目录下
+			[root@hostname ~]# cd /usr/local/redis/6379/bin
+		开启服务端,配置文件后端开启
+			执行指令：./redis-server ./redis.conf
+			[root@hostname bin]# ./redis-server ./redis.conf
+		查看进程加管道命令查看执行状态
+			执行命令：ps -ef | grep redis
+		开启客户端,连接Redis
+			执行指令：./redis-cli -h 127.0.0.1 -p 6379
+			[root@hostname bin]# ./redis-cli
+		测试：
+			输入ping 得到PONG 说明Redis安装配置连接OK！
+			ping命令
+			127.0.0.1:6379> ping
+			PONG
+			127.0.0.1:6379>
+
+
+六. fasfddfs安装
+
+1. 安装文件准备 root用户或具有sudo权限的用户
+	使用root用户给appuser用户赋予sudo权限
+	vim /etc/sudoers
+		root    ALL=(ALL) ALL
+		%appuser ALL=(ALL) NOPASSWD:ALL
+		
+		appuser组用户执行sudo命令,且不需要密码
+
+	FastDFS_v5.10.tar.gz. libfastcommon-1.0.35.tar.gz
+	将以上压缩文件存放在appuser应用目录下/app/softwave
+2. 安装libfastcommon依赖包
+	# tar -zxvf libfastcommon-1.0.35.tar.gz
+	# cd libfastcommon-1.0.35
+	# ./make.sh
+	# sudo ./make.sh install
+3. 设置软链接
+	# sudo ln -s /usr/lib64/libfastcommon.so /usr/local/lib/libfastcommon.so
+	# sudo ln -s /usr/lib64/libfastcommon.so /usr/lib/libfastcommon.so
+		ln: failed to create symbolic link '/usr/lib/libfastcommon.so': File exists
+	# sudo ln -s /usr/lib64/libfdfsclient.so /usr/local/lib/libfdfsclient.so
+4. 安装FastDFS
+	# tar -zxvf fastdfs-5.10.tar.gz
+	# cd fastdfs-5.10
+	# ./make.sh
+	# sudo ./make.sh install
+	安装完成后可以看到ll /etc/fdfs目录下生成了4个文件：
+		-rw-r--r-- 1 root root 1461 Mar  3 10:40 client.conf.sample
+		-rw-r--r-- 1 root root 7927 Mar  3 10:40 storage.conf.sample
+		-rw-r--r-- 1 root root  105 Mar  3 10:40 storage_ids.conf.sample
+		-rw-r--r-- 1 root root 7389 Mar  3 10:40 tracker.conf.sample	
+            
+5. 配置节点
+	配置tracker节点
+	# mkdir -p /app/fastdfs/tracker  			
+	#创建tracker的数据文件和日志存储目录
+	# cd /etc/fdfs
+	# sudo cp tracker.conf.sample tracker.conf
+	# sudo vi tracker.conf
+	#基础配置，修改文件内容如下：
+	base_path=/app/fastdfs/tracker		#设置tracker的数据文件和日志目录（需先创建）
+	http.server_port=6666				#设置http端口号，默认为8080
+	设置软链接
+	# sudo ln -s /usr/bin/fdfs_trackerd /usr/local/bin/fdfs_trackerd
+	# sudo ln -s /usr/bin/stop.sh /usr/local/bin
+	# sudo ln -s /usr/bin/restart.sh /usr/local/bin
+
+	配置storage节点
+	# mkdir –p /app/fastdfs/storage
+	# cd /etc/fdfs
+	# sudo cp storage.conf.sample storage.conf
+	# sudo vi storage.conf
+	group_name=group1   				#组名
+	base_path=/app/fastdfs/storage	    #设置storage目录
+	store_path_count=1  				#存储路径个数
+	store_path0=/app/fastdfs/storage 	#存储路径
+	tracker_server=ip:22122  			#tracker的 IP和端口号
+	http.server_port=8888
+	设置软链接
+	# sudo ln -s /usr/bin/fdfs_storaged /usr/local/bin
+
+	配置客户端文件
+	# cd /etc/fdfs
+	# sudo cp client.conf.sample client.conf
+	# sudo vi client.conf
+	base_path=/app/fastdfs/storage  	#日志存放路径
+	tracker_server= ip:22122			# tracker的 IP和端口号
+	http.tracker_server_port=6666  		#tracker的http端口号，必须和tracker的设置对应起来
+	# sudo chown -R appuser:appuser /etc/fdfs
+6. 启动节点
+	启动tracker节点
+	# /usr/bin/fdfs_trackerd /etc/fdfs/tracker.conf start
+	启动成功后，在ll /app/fastdfs/tracker目录下生成了data和logs两个目录
+	启动storage节点
+	# /usr/bin/fdfs_storaged /etc/fdfs/storage.conf start
+	启动成功后，在ll /app/fastdfs/storage目录下生成了data和logs两个目录。
+7. 检测FastDFS是否安装并启动成功
+	检查对应端口是否监听：sudo netstat -anp | grep fdfs
+		tcp        0      0 0.0.0.0:22122           0.0.0.0:*               LISTEN      21422/fdfs_trackerd 
+	执行ps -ef|grep fdfs显示如下即说明已安装完成
+		appuser  21422     1  0 10:59 ?        00:00:00 /usr/bin/fdfs_trackerd /etc/fdfs/tracker.conf start
+		appuser  21640     1 97 11:00 ?        00:02:28 /usr/bin/fdfs_storaged /etc/fdfs/storage.conf start
+		appuser  21679 21432  6 11:03 pts/0    00:00:00 grep --color=auto fdfs
 	
-16.管道命令查看执行状态
-	执行命令：ps -ef | grep redis
+8. 测试FastDFS
+	建立M00至存储目录的符号连接：
+	# sudo ln -s /app/fastdfs/storage/data /app/fastdfs/storage/data/M00
+	配置nginx（nginx的安装过程略）：
+		server {
+			listen        8091;
+			server_name  fastdfs_storage;
 
-17.连接Redis
-	执行指令：./redis-cli 
-	-h 192.168.200.128 -p 6379
+			charset UTF-8;
+			access_log  logs/fastdfs/storage_access.log  main;
 
-18.测试：
-	输入ping 得到PONG 说明Redis安装配置OK！
+			location /M00 {
+				root   /opt/fastdfs/storage/data;
+				index  index.html;
+			}
+		}
 
-	
-五、zookeeper的安装
+	测试文件上传：
+	# /usr/bin/fdfs_upload_file  /etc/fdfs/client.conf  /app/bak/aaa.txt
+	执行后返回：M00/00/00/CmRkBFlsUbmAFrbKAAAfwcqHioo587.jpg
+	访问上传文件：
+	http://10.200.174.216:8091/M00/00/00/CmRkBFlsUbmAFrbKAAAfwcqHioo587.txt
+
+			
+七. zookeeper的安装
 
 1.查看根目录目录结构(~ 同 /root/)
 	执行命令: ll -h
@@ -370,23 +896,36 @@ Redis的依赖下载
 	执行命令：cd bin
 	得到结果：zkServer.sh
 	
-19.在bin目录中开启服务
-	执行命令: ./zkServer.sh start
+19.在bin目录中开启关闭查看状态
+	zookeeper开启
+		进入zookeeper安装目录
+			[root@hostname ~]# cd /usr/local/zookeeper/zookeeper/bin
+		开启服务
+			执行命令: ./zkServer.sh start
+			[root@hostname bin]# ./zkServer.sh start 
+			JMX enabled by default
+			Using config: /usr/local/zookeeper/zookeeper/bin/../conf/zoo.cfg
+			Starting zookeeper ... already running as process 3683.
+		查看开启状态
+			执行命令: ./zkServer.sh status
+			得到结果: Mode: standalone
+			[root@hostname bin]# ./zkServer.sh status
+			JMX enabled by default
+			Using config: /usr/local/zookeeper/zookeeper/bin/../conf/zoo.cfg
+			Mode: standalone
+		关闭服务(开启失败时可以先关闭再开启)
+			执行命令: ./zkServer.sh stop
+			[root@hostname bin]# ./zkServer.sh stop
+			JMX enabled by default
+			Using config: /usr/local/zookeeper/zookeeper/bin/../conf/zoo.cfg
+			Stopping zookeeper ... STOPPED
+		再次查看执行状态
+			执行命令: ./zkServer.sh status
 
-20.查看执行状态
-	执行命令: ./zkServer.sh status
-	得到结果: Mode: standalone
-		(开启成功)
-		
-21.关闭服务(开启失败时可以先关闭再开启)
-	执行命令: ./zkServer.sh stop
-
-22.再次查看执行状态
-	执行命令: ./zkServer.sh status
 	
 
 	
-六、solr的安装
+八. solr的安装
 
 solr需要运行在一个Servlet容器中,Solr4.10.3要求jdk使用1.7以上,Solr默认提供Jetty（java写的Servlet容器）
 	windows下
@@ -576,7 +1115,7 @@ solr需要运行在一个Servlet容器中,Solr4.10.3要求jdk使用1.7以上,Solr默认提供Jetty（
 25.打开实例的配置文件schema.xml
 	/usr/local/solr/solrhome/collection1/conf/schema.xml
 	
-26.在schema.xml中添加一个自定义的fieldType，使用中文分析器,在文件最后添加如下内容
+26.在schema.xml中添加一个自定义的fieldType,使用中文分析器,在文件最后添加如下内容
 	<!-- IKAnalyzer-->
     <fieldType name="text_ik" class="solr.TextField">
       <analyzer class="org.wltea.analyzer.lucene.IKAnalyzer"/>
@@ -678,6 +1217,25 @@ solr需要运行在一个Servlet容器中,Solr4.10.3要求jdk使用1.7以上,Solr默认提供Jetty（
 	开启tomcat
 		执行命令：/startup.sh
 		
+	solr的开启,即开启tomcat
+		进入tomcat安装目录
+			[root@hostname ~]# cd /usr/local/solr/tomcat/bin
+		关闭命令
+			[root@hostname bin]# ./shutdown.sh
+			Using CATALINA_BASE:   /usr/local/solr/tomcat
+			Using CATALINA_HOME:   /usr/local/solr/tomcat
+			Using CATALINA_TMPDIR: /usr/local/solr/tomcat/temp
+			Using JRE_HOME:        /usr/local/java/jdk1.7.0_55
+			Using CLASSPATH:       /usr/local/solr/tomcat/bin/bootstrap.jar:/usr/local/solr/tomcat/bin/tomcat-juli.jar
+		开启命令
+			[root@hostname bin]# ./startup.sh
+			Using CATALINA_BASE:   /usr/local/solr/tomcat
+			Using CATALINA_HOME:   /usr/local/solr/tomcat
+			Using CATALINA_TMPDIR: /usr/local/solr/tomcat/temp
+			Using JRE_HOME:        /usr/local/java/jdk1.7.0_55
+			Using CLASSPATH:       /usr/local/solr/tomcat/bin/bootstrap.jar:/usr/local/solr/tomcat/bin/tomcat-juli.jar
+			[root@hostname bin]# 
+		
 38.访问solr项目页面,DataImport导入数据库数据
 	访问
 		http://192.168.200.128:8080/solr/
@@ -688,51 +1246,8 @@ solr需要运行在一个Servlet容器中,Solr4.10.3要求jdk使用1.7以上,Solr默认提供Jetty（
 			Commit 提交
 			Auto-Refresh Status 自动刷新状态
 			
-六.mysql数据库的远程连接
-	Mysql为了安全性，在默认情况下用户只允许在本地登录，可是在有此情况下，还是需要使用用户进行远程连接，
-	因此为了使其可以远程需要进行操作,允许root用户在任何地方进行远程登录，并具有所有库任何操作权限
 	
-	mysql -u root -p
-
-    查看user表
-
-	mysql> use mysql;
-	Database changed
-	mysql> select host,user,password from user;
-	+--------------+------+-------------------------------------------+
-	| host         | user | password                                  |
-	+--------------+------+-------------------------------------------+
-	| localhost    | root | *A731AEBFB621E354CD41BAF207D884A609E81F5E |
-	| 192.168.1.1  | root | *A731AEBFB621E354CD41BAF207D884A609E81F5E |
-	+--------------+------+-------------------------------------------+
-	2 rows in set (0.00 sec)
-	
-	mysql> update user set host='%' where user='root';
-
-   将权限改为ALL PRIVILEGES
-
-	mysql> use mysql;
-	Database changed
-	mysql> grant all privileges  on *.* to root@'%' identified by 'root';
-	Query OK, 0 rows affected (0.00 sec)
-
-	mysql> flush privileges;
-	Query OK, 0 rows affected (0.00 sec)
-
-	mysql> select host,user,password from user;
-	+--------------+------+-------------------------------------------+
-	| host         | user | password                                  |
-	+--------------+------+-------------------------------------------+
-	| localhost    | root | *A731AEBFB621E354CD41BAF207D884A609E81F5E |
-	| 192.168.1.1  | root | *A731AEBFB621E354CD41BAF207D884A609E81F5E |
-	| %            | root | *A731AEBFB621E354CD41BAF207D884A609E81F5E |
-	+--------------+------+-------------------------------------------+
-	3 rows in set (0.00 sec)
-
-	测试：mysql图形工具,新建连接,输入本机连接虚拟机的虚拟网卡上的ip,测试连接
-	
-	
-七.	cas的安装
+九.	cas的安装
 cas为war包项目,将项目部署到tomcat下
 cas需要连接数据库,要导入数据库的驱动包和连接包
 1.用户目录下查看目录和文件
@@ -801,13 +1316,13 @@ cas需要连接数据库,要导入数据库的驱动包和连接包
 	server.name=http://192.168.200.128:9001
 	
 14.去除https认证
-	CAS默认使用的是HTTPS协议，如果使用HTTPS协议需要SSL安全证书（需向特定的机构申请和购买）
+	CAS默认使用的是HTTPS协议,如果使用HTTPS协议需要SSL安全证书（需向特定的机构申请和购买）
 	（1）修改cas的WEB-INF/deployerConfigContext.xml
 	找到下面的配置
 	大概92行
 	<bean class="org.jasig.cas.authentication.handler.support.HttpBasedServiceCredentialsAuthenticationHandler"
 	p:httpClient-ref="httpClient" p:requireSecure="false"/>
-	这里需要增加参数p:requireSecure="false"，requireSecure属性意思为是否需要安全验证，即HTTPS，false为不采用
+	这里需要增加参数p:requireSecure="false",requireSecure属性意思为是否需要安全验证,即HTTPS,false为不采用
 	
 	（2）修改cas的/WEB-INF/spring-configuration/ticketGrantingTicketCookieGenerator.xml
 	找到下面配置
@@ -817,8 +1332,8 @@ cas需要连接数据库,要导入数据库的驱动包和连接包
 		  p:cookieMaxAge="3600"
 		  p:cookieName="CASTGC"
 		  p:cookiePath="/cas" />
-	参数p:cookieSecure="true"，同理为HTTPS验证相关，TRUE为采用HTTPS验证，FALSE为不采用https验证。
-	参数p:cookieMaxAge="-1"，是COOKIE的最大生命周期，-1为无生命周期，即只在当前打开的窗口有效，关闭或重新打开其它窗口，仍会要求验证。可以根据需要修改为大于0的数字，比如3600等，意思是在3600秒内，打开任意窗口，都不需要验证。
+	参数p:cookieSecure="true",同理为HTTPS验证相关,TRUE为采用HTTPS验证,FALSE为不采用https验证。
+	参数p:cookieMaxAge="-1",是COOKIE的最大生命周期,-1为无生命周期,即只在当前打开的窗口有效,关闭或重新打开其它窗口,仍会要求验证。可以根据需要修改为大于0的数字,比如3600等,意思是在3600秒内,打开任意窗口,都不需要验证。
 	我们这里将cookieSecure改为false ,  cookieMaxAge 改为3600
 	
 	（3）修改cas的WEB-INF/spring-configuration/warnCookieGenerator.xml
@@ -834,7 +1349,7 @@ cas需要连接数据库,要导入数据库的驱动包和连接包
 配置数据源,连接数据库
 
 15.配置数据源
-（1）修改cas服务端中web-inf下deployerConfigContext.xml ，添加如下配置
+（1）修改cas服务端中web-inf下deployerConfigContext.xml ,添加如下配置
 
 	<bean id="dataSource" class="com.mchange.v2.c3p0.ComboPooledDataSource"  
 		  p:driverClass="com.mysql.jdbc.Driver"  
@@ -870,7 +1385,7 @@ cas需要连接数据库,要导入数据库的驱动包和连接包
 </bean>
 其中
  <entry key-ref="primaryAuthenticationHandler" value-ref="primaryPrincipalResolver" />
-一句是使用固定的用户名和密码，我们在下面可以看到这两个bean ,如果我们使用数据库认证用户名和密码，需要将这句注释掉。
+一句是使用固定的用户名和密码,我们在下面可以看到这两个bean ,如果我们使用数据库认证用户名和密码,需要将这句注释掉。
 添加下面这一句配置,  注意中文空格, 如果有中文空格可能在配置文件中不好用
 <entry key-ref="dbAuthHandler" value-ref="primaryPrincipalResolver"/>
 
@@ -893,7 +1408,7 @@ cas需要连接数据库,要导入数据库的驱动包和连接包
 	16.1拷贝资源
 	（1）将需要更改的登陆页login.html拷贝到cas系统下WEB-INF\view\jsp\default\ui 目录下
 	（2）将css  js等文件夹拷贝到  cas目录下
-	（3）将原来的casLoginView.jsp 改名（可以为之后的修改操作做参照），将login.html改名为casLoginView.jsp 
+	（3）将原来的casLoginView.jsp 改名（可以为之后的修改操作做参照）,将login.html改名为casLoginView.jsp 
 	
 	16.2修改页面
 	编辑casLoginView.jsp 内容
@@ -925,21 +1440,111 @@ cas需要连接数据库,要导入数据库的驱动包和连接包
 16.3 错误提示的改造
 在表单内加入错误提示框
 	<form:errors path="*" id="msg" cssClass="errors" element="div" htmlEscape="false" />
-	测试：输入错误的用户名和密码，提示是英文。这个提示信息是在WEB-INF\classes目录下的messages.properties文件中
+	测试：输入错误的用户名和密码,提示是英文。这个提示信息是在WEB-INF\classes目录下的messages.properties文件中
 	authenticationFailure.AccountNotFoundException=Invalid credentials.
 	authenticationFailure.FailedLoginException=Invalid credentials.
 	设置国际化为zn_CN  ,修改cas-servlet.xml
 	<bean id="localeResolver" class="org.springframework.web.servlet.i18n.CookieLocaleResolver" p:defaultLocale="zh_CN" />
-	我们需要将此信息拷贝到messages_zh_CN.properties下，并改为中文提示（转码）
+	我们需要将此信息拷贝到messages_zh_CN.properties下,并改为中文提示（转码）
 	authenticationFailure.AccountNotFoundException=\u7528\u6237\u4E0D\u5B58\u5728
 	authenticationFailure.FailedLoginException=\u5BC6\u7801\u9519\u8BEF
 	第一个是用户名不存在时的错误提示
 	第二个是密码错误的提示
 
+17. cas的开启,即开启tomcat
+		进入tomcat安装目录
+			[root@hostname ~]# cd /usr/local/cas/tomcat/bin
+		关闭命令
+			[root@hostname bin]# ./shutdown.sh
+			Using CATALINA_BASE:   /usr/local/cas/tomcat
+			Using CATALINA_HOME:   /usr/local/cas/tomcat
+			Using CATALINA_TMPDIR: /usr/local/cas/tomcat/temp
+			Using JRE_HOME:        /usr/local/java/jdk1.7.0_55
+			Using CLASSPATH:       /usr/local/cas/tomcat/bin/bootstrap.jar:/usr/local/cas/tomcat/bin/tomcat-juli.jar
+		开启命令
+			[root@hostname bin]# ./startup.sh
+			Using CATALINA_BASE:   /usr/local/cas/tomcat
+			Using CATALINA_HOME:   /usr/local/cas/tomcat
+			Using CATALINA_TMPDIR: /usr/local/cas/tomcat/temp
+			Using JRE_HOME:        /usr/local/java/jdk1.7.0_55
+			Using CLASSPATH:       /usr/local/cas/tomcat/bin/bootstrap.jar:/usr/local/cas/tomcat/bin/tomcat-juli.jar
+	
+	
 温馨提示: 若数据库连接不通,检查真实机和虚拟机的防火墙设置,真实机在cmd下和虚拟机在窗口下互ping,ping不通时,可能防火墙为开启状态,将防火墙关闭
 	
 
 	
+十 springboot项目启停脚本实例
+bootstrap.sh
+
+	## 追加所有Jar
+	CLAZZ_PATH=""
+	append(){
+		CLAZZ_PATH=$CLAZZ_PATH":"$1
+	}
+	LIBS="$APP_HOME$_DPDC_LIBS/*"
+	for _FILE in $LIBS; do
+		append $_FILE
+	done
+	LIBS="$APP_HOME$_CORE_LIBS/*"
+	for _FILE in $LIBS; do
+		append $_FILE
+	done
+	LIBS=""
+
+	## 执行程序
+	java -cp $CLAZZ_PATH $OPTS $ENTRY $DATE_TIME $ARGS &
+	echo "$!" > $APP_HOME/app.pid
+
+	
+env.sh	
+
+	## JVM参数
+	#OPTS="-server -Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=51666"
+	OPTS="-server -Xms300m -Xmx300m -XX:PermSize=128M -XX:MaxPermSize=256m"
+
+	## 程序入口
+	ENTRY="cn.net.smda.app.publish.bootstrap.MSM"
+
+	## 依赖Jar
+	_DPDC_LIBS="/lib"
+
+	## 业务Jar
+	_CORE_LIBS="/core"
+
+	##  应用参数
+	ARGS="--logging.path=$APP_HOME/logs/"
+	ARGS="$ARGS --spring.config.location=file:$APP_HOME/conf/application.yml"
+	ARGS="$ARGS --logging.config=$APP_HOME/conf/logback-spring.xml"
+	ARGS="$ARGS --spring.profiles.active=pro"
+
+	#------------------------------------------------------
+
+	export OPTS
+	export ENTRY
+	export _DPDC_LIBS
+	export _CORE_LIBS
+	export ARGS
+
+	bash $APP_HOME/bin/bootstrap.sh
+	
+	
+startup.sh
+
+	## 脚本所在目录
+	CURRENT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
+	## 应用根目录
+	APP_HOME=$( cd $CURRENT_DIR && cd ..;pwd)
+
+	#------------------------------------------------------------------
+
+	export APP_HOME
+
+	bash $APP_HOME/bin/env.sh
+
+
+
 	
 	
 		
